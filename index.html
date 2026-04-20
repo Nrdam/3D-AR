@@ -1,448 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AR Menu Experience</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>AR Menu</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;500&family=Montserrat:wght@400;700&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --gold: #c9a84c;
-      --gold-light: #e8cc7a;
-      --dark: #0e0c0a;
-      --dark2: #1a1712;
-      --cream: #f5f0e8;
-      --text: #e8e0d0;
-      --text-muted: #a09070;
-    }
-
-    body {
-      background: var(--dark);
-      color: var(--text);
-      font-family: 'Montserrat', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* Grain overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 999;
-      opacity: 0.4;
-    }
-
-    header {
-      text-align: center;
-      padding: 2.5rem 1rem 1rem;
-      position: relative;
-    }
-
-    .logo-line {
-      width: 60px;
-      height: 1px;
-      background: var(--gold);
-      margin: 0 auto 1.2rem;
-      display: block;
-    }
-
-    header h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2rem, 7vw, 3.2rem);
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      color: var(--cream);
-      line-height: 1.1;
-    }
-
-    header h1 span {
-      color: var(--gold);
-    }
-
-    header p {
-      font-size: 0.7rem;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-top: 0.6rem;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      max-width: 340px;
-      margin: 1.5rem auto;
-      padding: 0 1rem;
-    }
-
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold));
-    }
-
-    .divider::after {
-      background: linear-gradient(to left, transparent, var(--gold));
-    }
-
-    .divider-icon {
-      color: var(--gold);
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-    }
-
-    /* Model Viewer Container */
-    .viewer-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-
-    .viewer-frame {
-      position: relative;
-      border-radius: 4px;
+    html, body {
+      width: 100%; height: 100%;
       overflow: hidden;
-      background: var(--dark2);
-      box-shadow:
-        0 0 0 1px rgba(201,168,76,0.2),
-        0 20px 60px rgba(0,0,0,0.6),
-        0 0 80px rgba(201,168,76,0.05);
-    }
-
-    /* Corner decorations */
-    .viewer-frame::before, .viewer-frame::after {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      z-index: 10;
-      pointer-events: none;
-    }
-    .viewer-frame::before {
-      top: 8px; left: 8px;
-      border-top: 1px solid var(--gold);
-      border-left: 1px solid var(--gold);
-    }
-    .viewer-frame::after {
-      bottom: 8px; right: 8px;
-      border-bottom: 1px solid var(--gold);
-      border-right: 1px solid var(--gold);
+      background: #0a0806;
+      font-family: 'Montserrat', sans-serif;
     }
 
     model-viewer {
-      width: 100%;
-      height: 420px;
-      background: radial-gradient(ellipse at center, #2a2218 0%, #0e0c0a 100%);
-      --poster-color: transparent;
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    /* AR Button */
-    .ar-btn {
+    #tap-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0a0806;
+      z-index: 10;
+      cursor: pointer;
+      transition: opacity 0.4s ease;
+    }
+
+    .rings {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
-      width: calc(100% - 2rem);
-      max-width: 520px;
-      margin: 1.2rem auto 0;
-      padding: 1rem 1.5rem;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
-      background-size: 200% 200%;
-      color: var(--dark);
+      pointer-events: none;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,0.15);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    .ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+    .ring:nth-child(2) { width: 300px; height: 300px; animation-delay: 0.6s; }
+    .ring:nth-child(3) { width: 400px; height: 400px; animation-delay: 1.2s; }
+    .ring:nth-child(4) { width: 500px; height: 500px; animation-delay: 1.8s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.04); opacity: 0.1; }
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.6rem;
+    }
+
+    .ar-icon-wrap {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #2a1f0a 0%, #0a0806 100%);
+      border: 1px solid rgba(201,168,76,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: glow 2.5s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 30px rgba(201,168,76,0.1); }
+      50% { box-shadow: 0 0 60px rgba(201,168,76,0.35); }
+    }
+
+    .ar-icon-wrap svg { width: 44px; height: 44px; color: #c9a84c; }
+
+    .eyebrow {
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #c9a84c;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 8vw, 3rem);
+      font-weight: 300;
+      color: #f5f0e8;
+      line-height: 1;
+      letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: #6b5e45;
+      text-transform: uppercase;
+    }
+
+    .tap-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 1.1rem 2.2rem;
+      background: linear-gradient(135deg, #c9a84c, #e8cc7a, #c9a84c);
+      background-size: 200%;
+      color: #0a0806;
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.25em;
       text-transform: uppercase;
       border: none;
-      cursor: pointer;
       border-radius: 2px;
-      transition: all 0.3s ease;
-      animation: shimmer 3s infinite;
-      text-decoration: none;
+      cursor: pointer;
+      animation: btnShimmer 2.5s infinite;
+      box-shadow: 0 8px 30px rgba(201,168,76,0.3);
+      transition: transform 0.2s ease;
     }
 
-    @keyframes shimmer {
+    .tap-btn:active { transform: scale(0.97); }
+
+    @keyframes btnShimmer {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
-    .ar-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(201,168,76,0.4);
-    }
-
-    .ar-btn svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    /* Info section */
-    .info-section {
-      max-width: 520px;
-      margin: 2rem auto 0;
-      padding: 0 1rem;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1px;
-      background: rgba(201,168,76,0.1);
-      border: 1px solid rgba(201,168,76,0.1);
-    }
-
-    .info-item {
-      background: var(--dark2);
-      padding: 1.2rem 0.8rem;
-      text-align: center;
-    }
-
-    .info-item .icon {
-      font-size: 1.2rem;
-      display: block;
-      margin-bottom: 0.4rem;
-    }
-
-    .info-item .label {
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      display: block;
-      margin-bottom: 0.2rem;
-    }
-
-    .info-item .value {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.95rem;
-      color: var(--gold);
-      display: block;
-    }
-
-    /* Instructions */
-    .instructions {
-      max-width: 520px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    .instructions h3 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.1rem;
-      font-weight: 400;
+    .tap-hint {
+      font-size: 0.58rem;
       letter-spacing: 0.15em;
-      color: var(--cream);
-      margin-bottom: 1rem;
-      text-align: center;
+      color: #4a3f2a;
+      text-transform: uppercase;
     }
 
-    .steps {
-      display: flex;
+    #tap-screen.hiding { opacity: 0; pointer-events: none; }
+
+    #no-ar {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #0a0806;
       flex-direction: column;
-      gap: 0.8rem;
-    }
-
-    .step {
-      display: flex;
-      align-items: flex-start;
+      align-items: center;
+      justify-content: center;
       gap: 1rem;
-      padding: 0.9rem 1rem;
-      background: var(--dark2);
-      border-left: 2px solid rgba(201,168,76,0.3);
+      padding: 2rem;
+      text-align: center;
+      z-index: 20;
     }
 
-    .step-num {
+    #no-ar.show { display: flex; }
+
+    #no-ar strong {
+      color: #c9a84c;
       font-family: 'Cormorant Garamond', serif;
       font-size: 1.4rem;
-      color: var(--gold);
-      line-height: 1;
-      flex-shrink: 0;
-      width: 24px;
-    }
-
-    .step-text {
-      font-size: 0.72rem;
-      letter-spacing: 0.05em;
-      line-height: 1.7;
-      color: var(--text-muted);
-    }
-
-    .step-text strong {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    footer {
-      text-align: center;
-      padding: 2rem 1rem 3rem;
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    footer span {
-      color: var(--gold);
-    }
-
-    /* Fade-in animation */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    header { animation: fadeUp 0.8s ease both; }
-    .viewer-wrapper { animation: fadeUp 0.8s 0.2s ease both; }
-    .ar-btn { animation: fadeUp 0.8s 0.3s ease both; }
-    .info-section { animation: fadeUp 0.8s 0.4s ease both; }
-    .instructions { animation: fadeUp 0.8s 0.5s ease both; }
-
-    /* No AR fallback */
-    .no-ar-msg {
-      display: none;
-      text-align: center;
-      font-size: 0.7rem;
-      color: var(--text-muted);
+      font-weight: 300;
       letter-spacing: 0.1em;
-      margin-top: 0.6rem;
-      padding: 0 1rem;
+    }
+
+    #no-ar p {
+      color: #6b5e45;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      line-height: 1.8;
+      max-width: 280px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <span class="logo-line"></span>
-    <h1>Dish <span>Experience</span></h1>
-    <p>Augmented Reality Menu</p>
-  </header>
-
-  <div class="divider"><span class="divider-icon">✦</span></div>
-
-  <div class="viewer-wrapper">
-    <div class="viewer-frame">
-      <model-viewer
-        id="dish-viewer"
-        src="https://raw.githubusercontent.com/Nrdam/3D-AR/main/dish.glb"
-        alt="3D Dish Model"
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        camera-controls
-        auto-rotate
-        auto-rotate-delay="1000"
-        rotation-per-second="30deg"
-        shadow-intensity="1.2"
-        exposure="1.1"
-        environment-image="neutral"
-        loading="eager"
-      >
-        <!-- Custom AR button inside model-viewer slot -->
-        <button slot="ar-button" class="ar-btn" style="position:static;width:100%;max-width:none;margin:0;border-radius:0;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
-          </svg>
-          View in Your Space
-        </button>
-      </model-viewer>
-    </div>
-  </div>
-
-  <!-- Fallback external AR button for devices that may need it -->
-  <a
-    id="ar-fallback"
-    class="ar-btn"
-    href="#"
-    onclick="document.getElementById('dish-viewer').activateAR(); return false;"
-    style="display:none;"
+  <model-viewer
+    id="mv"
+    src="https://raw.githubusercontent.com/Nrdam/3D-AR/main/dish.glb"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    shadow-intensity="1"
+    exposure="1.1"
+    environment-image="neutral"
+    loading="eager"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-      <path d="M2 17l10 5 10-5"/>
-      <path d="M2 12l10 5 10-5"/>
-    </svg>
-    Launch AR View
-  </a>
+    <button slot="ar-button" id="ar-hidden-btn" style="display:none;"></button>
+  </model-viewer>
 
-  <p class="no-ar-msg" id="no-ar-msg">AR not supported on this device. Try on a modern iOS or Android phone.</p>
-
-  <div class="info-section">
-    <div class="info-item">
-      <span class="icon">📱</span>
-      <span class="label">Compatible</span>
-      <span class="value">iOS & Android</span>
+  <div id="tap-screen">
+    <div class="rings">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
     </div>
-    <div class="info-item">
-      <span class="icon">🔄</span>
-      <span class="label">Interact</span>
-      <span class="value">Drag & Zoom</span>
-    </div>
-    <div class="info-item">
-      <span class="icon">✦</span>
-      <span class="label">Mode</span>
-      <span class="value">Live AR</span>
+    <div class="content">
+      <div class="ar-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:0.5rem">Augmented Reality</div>
+        <h1>See Your Dish</h1>
+        <div class="subtitle" style="margin-top:0.4rem">In your real space</div>
+      </div>
+      <button class="tap-btn" onclick="launchAR()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M3 9V6a3 3 0 013-3h3M15 3h3a3 3 0 013 3v3M21 15v3a3 3 0 01-3 3h-3M9 21H6a3 3 0 01-3-3v-3"/>
+        </svg>
+        Tap to Open Camera
+      </button>
+      <span class="tap-hint">Point at any flat surface to place</span>
     </div>
   </div>
 
-  <div class="instructions">
-    <h3>How to Experience</h3>
-    <div class="steps">
-      <div class="step">
-        <span class="step-num">1</span>
-        <span class="step-text"><strong>Rotate & Explore</strong> — drag the model above to view it from all angles before placing it in AR.</span>
-      </div>
-      <div class="step">
-        <span class="step-num">2</span>
-        <span class="step-text"><strong>Tap "View in Your Space"</strong> — this opens your camera in AR mode automatically.</span>
-      </div>
-      <div class="step">
-        <span class="step-num">3</span>
-        <span class="step-text"><strong>Point at a flat surface</strong> — table, floor, or counter — and tap to place the dish.</span>
-      </div>
-    </div>
+  <div id="no-ar">
+    <strong>AR Not Available</strong>
+    <p>Try opening this link in <strong>Safari</strong> on iPhone or <strong>Chrome</strong> on Android.</p>
   </div>
-
-  <footer>
-    Powered by <span>WebXR & Model Viewer</span> &nbsp;✦&nbsp; Best experienced on mobile
-  </footer>
 
   <script>
-    const viewer = document.getElementById('dish-viewer');
+    const mv = document.getElementById('mv');
+    const tapScreen = document.getElementById('tap-screen');
 
-    viewer.addEventListener('load', () => {
-      console.log('Model loaded successfully');
-    });
+    function launchAR() {
+      const dismiss = () => {
+        tapScreen.classList.add('hiding');
+        setTimeout(() => tapScreen.style.display = 'none', 400);
+      };
 
-    viewer.addEventListener('error', (e) => {
-      console.error('Model error:', e);
-    });
-
-    // Check AR support
-    viewer.addEventListener('ar-status', (e) => {
-      if (e.detail.status === 'failed') {
-        document.getElementById('no-ar-msg').style.display = 'block';
+      if (mv.canActivateAR) {
+        dismiss();
+        mv.activateAR();
+      } else {
+        mv.addEventListener('load', () => {
+          if (mv.canActivateAR) {
+            dismiss();
+            mv.activateAR();
+          } else {
+            document.getElementById('no-ar').classList.add('show');
+            tapScreen.style.display = 'none';
+          }
+        }, { once: true });
       }
-    });
-
-    // Show fallback button if model-viewer AR button isn't shown
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const slottedBtn = viewer.querySelector('[slot="ar-button"]');
-        if (!slottedBtn) {
-          document.getElementById('ar-fallback').style.display = 'flex';
-        }
-      }, 2000);
-    });
+    }
   </script>
 
 </body>
