@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>AR Menu</title>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;500&family=Montserrat:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0a0806;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    model-viewer {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #tap-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0a0806;
+      z-index: 10;
+      cursor: pointer;
+      transition: opacity 0.4s ease;
+    }
+
+    .rings {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,0.15);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    .ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+    .ring:nth-child(2) { width: 300px; height: 300px; animation-delay: 0.6s; }
+    .ring:nth-child(3) { width: 400px; height: 400px; animation-delay: 1.2s; }
+    .ring:nth-child(4) { width: 500px; height: 500px; animation-delay: 1.8s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.04); opacity: 0.1; }
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.6rem;
+    }
+
+    .ar-icon-wrap {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #2a1f0a 0%, #0a0806 100%);
+      border: 1px solid rgba(201,168,76,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: glow 2.5s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 30px rgba(201,168,76,0.1); }
+      50% { box-shadow: 0 0 60px rgba(201,168,76,0.35); }
+    }
+
+    .ar-icon-wrap svg { width: 44px; height: 44px; color: #c9a84c; }
+
+    .eyebrow {
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #c9a84c;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 8vw, 3rem);
+      font-weight: 300;
+      color: #f5f0e8;
+      line-height: 1;
+      letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: #6b5e45;
+      text-transform: uppercase;
+    }
+
+    .tap-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 1.1rem 2.2rem;
+      background: linear-gradient(135deg, #c9a84c, #e8cc7a, #c9a84c);
+      background-size: 200%;
+      color: #0a0806;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      animation: btnShimmer 2.5s infinite;
+      box-shadow: 0 8px 30px rgba(201,168,76,0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .tap-btn:active { transform: scale(0.97); }
+
+    @keyframes btnShimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .tap-hint {
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      color: #4a3f2a;
+      text-transform: uppercase;
+    }
+
+    #tap-screen.hiding { opacity: 0; pointer-events: none; }
+
+    #no-ar {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #0a0806;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+      text-align: center;
+      z-index: 20;
+    }
+
+    #no-ar.show { display: flex; }
+
+    #no-ar strong {
+      color: #c9a84c;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+    }
+
+    #no-ar p {
+      color: #6b5e45;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      line-height: 1.8;
+      max-width: 280px;
+    }
+  </style>
+</head>
+<body>
+
+  <model-viewer
+    id="mv"
+    src="https://raw.githubusercontent.com/Nrdam/3D-AR/main/dish.glb"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    camera-controls
+    shadow-intensity="1"
+    exposure="1.1"
+    environment-image="neutral"
+    loading="eager"
+  >
+    <button slot="ar-button" id="ar-hidden-btn" style="display:none;"></button>
+  </model-viewer>
+
+  <div id="tap-screen">
+    <div class="rings">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+    </div>
+    <div class="content">
+      <div class="ar-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:0.5rem">Augmented Reality</div>
+        <h1>See Your Dish</h1>
+        <div class="subtitle" style="margin-top:0.4rem">In your real space</div>
+      </div>
+      <button class="tap-btn" onclick="launchAR()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M3 9V6a3 3 0 013-3h3M15 3h3a3 3 0 013 3v3M21 15v3a3 3 0 01-3 3h-3M9 21H6a3 3 0 01-3-3v-3"/>
+        </svg>
+        Tap to Open Camera
+      </button>
+      <span class="tap-hint">Point at any flat surface to place</span>
+    </div>
+  </div>
+
+  <div id="no-ar">
+    <strong>AR Not Available</strong>
+    <p>Try opening this link in <strong>Safari</strong> on iPhone or <strong>Chrome</strong> on Android.</p>
+  </div>
+
+  <script>
+    const mv = document.getElementById('mv');
+    const tapScreen = document.getElementById('tap-screen');
+
+    function launchAR() {
+      const dismiss = () => {
+        tapScreen.classList.add('hiding');
+        setTimeout(() => tapScreen.style.display = 'none', 400);
+      };
+
+      if (mv.canActivateAR) {
+        dismiss();
+        mv.activateAR();
+      } else {
+        mv.addEventListener('load', () => {
+          if (mv.canActivateAR) {
+            dismiss();
+            mv.activateAR();
+          } else {
+            document.getElementById('no-ar').classList.add('show');
+            tapScreen.style.display = 'none';
+          }
+        }, { once: true });
+      }
+    }
+  </script>
+
+</body>
+</html>
