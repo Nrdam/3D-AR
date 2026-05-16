@@ -1,1 +1,0 @@
-<model-viewer src="dQ9745eyNMVwoWObu5bcX_model.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" poster="poster.webp" shadow-intensity="1"> </model-viewer>
